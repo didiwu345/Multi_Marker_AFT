@@ -62,9 +62,12 @@ Multi_Marker_AFT = function(G, H=NULL, GxH=NULL, het_cov=NULL, adj_cov=NULL, ker
   #     adj_cov:   Adjustment covariate matrix (Default: NULL; required for main-effect test)
   #     het_cov:   Covariate matrix indicating genetic heterogeneity
   #     kernel_G: Kernel type   (included: 'ibs', 'cp', 'gaussian', 'identity') or Kernel matrix.
-  #               Main-effect test: kernel on G. Interaction test with kernel_H=NULL: kernel on GxH ('cp' recommended).
-  #               Interaction test with kernel_H given: kernel on G, and the interaction kernel is K_G * K_H (element-wise).
-  #     kernel_H: Kernel type   (included: 'ibs', 'cp', 'gaussian', 'identity') for H or Kernel matrix (Default: NULL; Only used in G-G/G-E interaction)
+  #               Main-effect test: kernel on G.
+  #               Interaction test: kernel on G, and the interaction kernel is K_G * K_H (element-wise).
+  #               If GxH is supplied and kernel_H=NULL: kernel on GxH instead ('cp' or 'gaussian' recommended).
+  #               If kernel_G is a matrix and kernel_H=NULL: kernel_G is used as the full interaction kernel.
+  #     kernel_H: Kernel type   (included: 'ibs', 'cp', 'gaussian', 'identity') for H or Kernel matrix
+  #               (Default: NULL --> same kernel type as kernel_G, unless GxH is supplied; Only used in G-G/G-E interaction)
   #               With kernel_G='cp' and kernel_H='cp', K_G * K_H equals the 'cp' kernel on GxH built from centered G and H.
   #     kernel_het: Kernel type (included: 'ibs', 'cp', 'gaussian', 'identity') for het_cov or Kernel matrix (Default: NULL; Only needed under genetic heterogeneity)
   #     smalln_ind: 'smalln_adj' or 'no_smalln_adj' (Default)
@@ -87,6 +90,8 @@ Multi_Marker_AFT = function(G, H=NULL, GxH=NULL, het_cov=NULL, adj_cov=NULL, ker
     }
     Gc = center_cols(G)
     Hc = center_cols(H)
+    #-- Without user-supplied GxH, the same kernel type is applied to G and H: K = K_G(G) * K_G(H)
+    if(is.null(kernel_H) && is.null(GxH) && !is.matrix(kernel_G)){ kernel_H = kernel_G }
     if(is.null(GxH)){
       GxH = NULL
       for(i in 1:ncol(Hc)){ GxH = cbind(GxH, Gc*Hc[,i]) }

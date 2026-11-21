@@ -29,8 +29,8 @@ To successfully implement the test, you will need following R package dependenci
 * `GxH`: Interaction terms as input matrix (Default: NULL). If NULL and `H` is given, `GxH` is built from all pairwise products of the columns of centered `G` and centered `H`.
 * `adj_cov`:   Adjustment covariate matrix (Default: NULL; required for main-effect test)
 * `het_cov`:   Covariate matrix indicating genetic heterogeneity
-* `kernel_G`: Kernel type   (included: 'ibs', 'cp', 'gaussian', 'identity') or Kernel matrix. Main-effect test: kernel on `G`. Interaction test with `kernel_H=NULL`: kernel on `GxH` ('cp' or 'gaussian' recommended; 'ibs' assumes 0/1/2 genotypes). Interaction test with `kernel_H` given: kernel on `G`, and the interaction kernel is `K_G * K_H` (element-wise).
-* `kernel_H`: Kernel type   (included: 'ibs', 'cp', 'gaussian', 'identity') for H or Kernel matrix (Default: NULL; Only used in G-G/G-E interaction). With `kernel_G='cp'` and `kernel_H='cp'`, `K_G * K_H` equals the 'cp' kernel on `GxH`.
+* `kernel_G`: Kernel type   (included: 'ibs', 'cp', 'gaussian', 'identity') or Kernel matrix. Main-effect test: kernel on `G`. Interaction test: kernel on `G`, and the interaction kernel is `K_G * K_H` (element-wise). If `GxH` is supplied and `kernel_H=NULL`, the kernel is applied to `GxH` instead ('cp' or 'gaussian' recommended; 'ibs' assumes 0/1/2 genotypes).
+* `kernel_H`: Kernel type   (included: 'ibs', 'cp', 'gaussian', 'identity') for H or Kernel matrix (Default: NULL --> same kernel type as `kernel_G`, unless `GxH` is supplied; Only used in G-G/G-E interaction). With `kernel_G='cp'` and `kernel_H='cp'`, `K_G * K_H` equals the 'cp' kernel on `GxH`.
 * `kernel_het`: Kernel type (included: 'ibs', 'cp', 'gaussian', 'identity') for het_cov or Kernel matrix (Default: NULL; Only needed under genetic heterogeneity)
 * `smalln_ind`: 'smalln_adj' or 'no_smalln_adj' (Default)
 * `trunct`: truncation time, default is NULL --> no truncation time (OR all truncation time is 0)
@@ -102,7 +102,8 @@ pval = Multi_Marker_AFT(G=G, H=NULL, GxH=NULL, het_cov=NULL, adj_cov=X, kernel_G
 ### Step4: G-G / G-E interaction test
 Pass the second SNP-set (G-G) or environment matrix (G-E) as `H`. The G and H main effects are adjusted in the null model automatically, so `adj_cov` only needs the other covariates.
 ```bash
-#-- G-G interaction: cross-product kernel on GxH (built internally from centered G and H)
+#-- G-G interaction: kernel_G='cp' alone is sufficient; kernel_H defaults to kernel_G, so K = cpkm(G) * cpkm(H)
+#-- (identical to the cross-product kernel on GxH built from centered G and H)
 G1 = G[,1:5]
 G2 = G[,6:10]
 pval_GG = Multi_Marker_AFT(G=G1, H=G2, adj_cov=X, kernel_G='cp', smalln_ind='no_smalln_adj', trunct=trunct, survt=survt, status=status, BB=500)
